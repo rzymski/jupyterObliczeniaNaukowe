@@ -25,13 +25,14 @@ for p, v in zip(points, values):
     print(f'y({p}) = {v}')
 
 
-diffEq2 = Eq(yPrim, x - 1 + (x + 1) * y(x))
+# diffEq2 = Eq(yPrim, x - 1 + (x + 1) * y(x))
+diffEq2 = Eq(y(x).diff(x) - (x + 1)*y(x), x - 1)
 initialCondition2 = {y(0): 0}
 solution2 = dsolve(diffEq2, y(x), ics=initialCondition2)
 solution2 = solution2.simplify()
 print(solution2)
 
-values2 = [solution2.rhs.subs(x, p) for p in points]
+values2 = [round(solution2.rhs.subs(x, p).evalf(10), 5) for p in points]
 
 for p, v in zip(points, values2):
     print(f'y({p}) = {v}')
