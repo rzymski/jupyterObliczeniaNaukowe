@@ -1,46 +1,37 @@
-import sympy as sp
-import numpy as np
-import matplotlib.pyplot as plt
+from sympy import symbols, Function, dsolve, Eq, exp
 
-x = sp.symbols('x')
+# Definicja zmiennych i funkcji
+x = symbols('x')
+y = Function('y')
 
+yPrim = y(x).diff(x)
 
-def t1(func, Nn, x0):
-    skladowe = []
-    szeregTaylora = 0
+# Definicja równania różniczkowego
+diffEq = Eq(yPrim, 2 * y(x) + exp(x) - x)
 
-    for n in range(Nn + 1):
-        pochodna = sp.diff(func, x, n)
-        pochodnaX = pochodna.subs(x, x0)
-        skladowa = pochodnaX / sp.factorial(n) * ((x - x0) ** n)
-        skladowe.append(skladowa)
-        szeregTaylora += skladowa
+# Warunek początkowy
+initialCondition = {y(0): 1 / 4}
 
-    funcLambda = sp.lambdify(x, func, modules=['numpy'])
-    taylorLambda = sp.lambdify(x, szeregTaylora, modules=['numpy'])
-    skladoweLambda = [sp.lambdify(x, sklad, modules=['numpy']) for sklad in skladowe]
+# Rozwiązanie równania różniczkowego
+solution = dsolve(diffEq, y(x), ics=initialCondition)
+solution = solution.simplify()
 
-    plt.figure(figsize=(10, 6))
-    x_vals = np.linspace(-4, 4, 400)
-    # Wykres funkcji f(x)
-    plt.plot(x_vals, funcLambda(x_vals), label='f(x)')
+print(solution)
 
-    # Wykres N-tego przybliżenia funkcji f(x) szeregiem Taylora
-    plt.plot(x_vals, taylorLambda(x_vals), label=f'N-te przybliżenie (N={Nn})')
+points = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+values = [solution.rhs.subs(x, p) for p in points]
 
-    # Wykres składowych N-tego przybliżenia
-    for i, sklad in enumerate(skladoweLambda):
-        plt.plot(x_vals, sklad(x_vals), linestyle='--', label=f'a{i}(x)')
-
-    plt.legend()
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Przybliżenie funkcji szeregiem Taylora')
-    plt.grid(True)
-    plt.show()
-
-    return skladowe, szeregTaylora
+for p, v in zip(points, values):
+    print(f'y({p}) = {v}')
 
 
-# Przykładowe użycie
-t1(sp.sin(x), 5, 0)
+diffEq2 = Eq(yPrim, x - 1 + (x + 1) * y(x))
+initialCondition2 = {y(0): 0}
+solution2 = dsolve(diffEq2, y(x), ics=initialCondition2)
+solution2 = solution2.simplify()
+print(solution2)
+
+values2 = [solution2.rhs.subs(x, p) for p in points]
+
+for p, v in zip(points, values2):
+    print(f'y({p}) = {v}')
